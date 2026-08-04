@@ -1,6 +1,9 @@
 import streamlit as st
 import redcap_utils
 
+if "password" not in st.session_state:
+    st.session_state["password"] = ""
+
 st.set_page_config(
     page_title="Vlasits Colony Manager",
     layout="wide",
@@ -53,6 +56,19 @@ nav_structure = {
 }
 
 pg = st.navigation(nav_structure,expanded=2)
+
+password = ""
+if st.session_state["password"] == "":
+    password = st.text_input(
+        "Access Password",
+        type="password",
+        width = 300,
+    )
+    if password == st.secrets["PASSWORD"]:
+        st.session_state["password"] = password
+        st.rerun()
+    else:
+        st.stop()
 
 pg.run()
 
