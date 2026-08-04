@@ -1,0 +1,16 @@
+[theme]
+primaryColor = "#787088"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#e8e6ec"
+textColor = "#262730"
+font = "sans serif"
+violetColor = "#262730"
+grayColor = "#e8e6ec"
+
+[theme.sidebar]
+primaryColor = "#787088"
+backgroundColor = "#e8e6ec"
+textColor = "#262730"
+linkColor = "#262730"
+font = "sans serif"
+baseRadius = "full"
