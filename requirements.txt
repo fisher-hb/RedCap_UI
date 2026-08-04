@@ -4,5 +4,4 @@ matplotlib
 datetime
 numpy
 plotly
-redcap
 PyCap
