@@ -68,7 +68,6 @@ with st.sidebar:
 
     import streamlit as st
 
-    # Custom CSS for caption
     caption_style = """
         <p style="
             font-size: 14px; 
