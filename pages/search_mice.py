@@ -35,7 +35,7 @@ with st.sidebar:
 
     group_view = st.selectbox(
         "Sort by Group",
-        options = [None,"Cage Number", "Litter ID", "Genotype", "Requestor"],
+        options = [None,"Cage Number", "Litter ID", "Genotype"],
         index = 1,
     )
 

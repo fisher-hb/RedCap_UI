@@ -135,7 +135,7 @@ if sac_type == "Breeding Cage":
                 st.info("Returning you to Breeding Dashboard")
                 time.sleep(2)
                 st.session_state["redcap_df"] = redcap_utils.load_records()
-                st.switch_page("pages/breeding_dashboard.py")
+                st.switch_page("pages/breeding_cages.py")
 
 # --------------------------------------------------
 # Sac Single Cage

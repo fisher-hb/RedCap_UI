@@ -699,6 +699,7 @@ def build_breeding_dashboard_table(df):
         current_litters = []
         previous_litters = []
         weaning_needed = False
+        days_since_last_litter = None
 
         if not cage_litters.empty:
             
@@ -733,8 +734,6 @@ def build_breeding_dashboard_table(df):
             most_recent_litter = cage_litters.iloc[len(cage_litters) - 1]
             most_recent_litter_dob = most_recent_litter.get("litter_dob","")
             most_recent_litter_dob = date.fromisoformat(str(most_recent_litter_dob).strip())
- 
-            days_since_last_litter = ""
 
             if len(cage_litters) > 0:
                 days_since_last_litter = (today - most_recent_litter_dob).days
