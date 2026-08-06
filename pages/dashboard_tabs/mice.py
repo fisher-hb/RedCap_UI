@@ -82,7 +82,7 @@ def create_mice(genotype_groups, current_experimental):
 
     mouse_counts_male = (len(current_experimental[current_experimental["mouse_sex"] == "male"]))
     mouse_counts_female = (len(current_experimental[current_experimental["mouse_sex"] == "female"]))
-    mouse_counts_available = (len(current_experimental[current_experimental["flag"] == "available"]))
+    mouse_counts_available = (len(current_experimental[current_experimental["request_flag"] == "available"]))
 
     col1, col2, col3, col4 = st.columns(4)
     st.divider()

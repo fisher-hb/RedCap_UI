@@ -110,8 +110,15 @@ if upload_csv:
                 )
                 genotypes.append(redcap_utils.genotype_label_to_variable(genotype))
             with colc:
+                df = st.session_state["redcap_df"].copy()
+                df = df[(df["redcap_repeat_instrument"].astype(str).str.strip() == "")]
+                df = df[df["mouse_id"] == mouse_ids[i]]
                 if mouse_ids[i] != None:
-                    sex, parental_cross = redcap_utils.get_parental_cross(mouse_ids[i])
+                    if df.iloc[0]["mouse_parental_cross"] == "":
+                        sex, parental_cross = redcap_utils.get_parental_cross(mouse_ids[i])
+                    else:
+                        sex = df.iloc[0]["mouse_sex"]
+                        parental_cross = df.iloc[0]["mouse_parental_cross"]
                     options = redcap_utils.get_possible_genotypes(parental_cross,sex)
                     options = options.rename(columns={"offspring_genotype": "Genotype Options"})
                     options = options["Genotype Options"]

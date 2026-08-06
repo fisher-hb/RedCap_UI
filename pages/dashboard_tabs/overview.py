@@ -48,7 +48,7 @@ def create_overview(total_df, current_df, current_experimental, current_breeding
                 "mouse_cage_number",
                 "mouse_dob",
                 "mouse_age_weeks",
-                "flag",
+                "request_flag",
             ]
         ].copy()
 
@@ -70,7 +70,7 @@ def create_overview(total_df, current_df, current_experimental, current_breeding
                     "mouse_cage_number": "Cage Number",
                     "mouse_dob": "Date of Birth",
                     "mouse_age_weeks": "Age Weeks",
-                    "flag": "Flag",
+                    "request_flag": "Flag",
                 }
             ),
             hide_index=True,
@@ -101,7 +101,7 @@ def create_overview(total_df, current_df, current_experimental, current_breeding
                 "mouse_cage_number",
                 "mouse_dob",
                 "mouse_age_weeks",
-                "flag",
+                "request_flag",
             ]
         ].copy()
 
@@ -122,7 +122,7 @@ def create_overview(total_df, current_df, current_experimental, current_breeding
                     "mouse_cage_number": "Cage Number",
                     "mouse_dob": "Date of Birth",
                     "mouse_age_weeks": "Age Weeks",
-                    "flag": "Flag",
+                    "request_flag": "Flag",
                 }
             ),
             hide_index=True,

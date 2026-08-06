@@ -4,6 +4,7 @@ import redcap_utils
 import time
 
 st.subheader("Search Mice")
+flag = ""
 
 # --------------------------------------------------
 # Create Search Sidebar
@@ -33,6 +34,22 @@ with st.sidebar:
         horizontal = True,
     )
 
+    flag_choices = redcap_utils.get_field_choices("request_flag")
+    flag_labels = [choice["label"] for choice in flag_choices]
+        
+    flag_label = st.selectbox(
+        "Request Flag",
+        options = flag_labels,
+        index = None,
+    )
+
+    if flag_label != None:
+        flag = next(
+            choice["value"]
+            for choice in flag_choices
+            if choice["label"] == flag_label
+        )
+
     group_view = st.selectbox(
         "Sort by Group",
         options = [None,"Cage Number", "Litter ID", "Genotype"],
@@ -52,7 +69,7 @@ with st.sidebar:
         options = column_names,
         default = ["Mouse ID",
         "Sex",
-        "Age (Weeks)",
+        "Age (Days)",
         "Genotype",
         "Cage Number",
         "Flag"]
@@ -69,7 +86,7 @@ with st.sidebar:
 df = st.session_state["redcap_df"].copy()
 st.session_state["mice_request"] = []
 
-df = df[(df["redcap_repeat_instrument"] == "")]
+df = df[(df["redcap_repeat_instrument"].astype(str).str.strip() == "")]
 
 df["mouse_age_days_numeric"] = pd.to_numeric(
     df["mouse_age_days"],
@@ -78,6 +95,10 @@ df["mouse_age_days_numeric"] = pd.to_numeric(
 
 df["age_weeks"] = (df["mouse_age_days_numeric"] / 7).round(1)
 df["age_months"] = (df["mouse_age_days_numeric"] / 30.44).round(1)
+
+upload_csv = pd.read_csv("genotypes.csv",dtype="str")
+genotype_df = upload_csv
+parental_cross_choices = genotype_df["Breeding Cross"].tolist()
 
 genotype_choices = redcap_utils.get_genotypes()
 genotype_labels = genotype_choices["label"]
@@ -102,7 +123,6 @@ sex = ""
 min_age = ""
 max_age = ""
 requestor = ""
-flag = ""
 grouped = ""
 
 with st.form("search_form"):
@@ -128,37 +148,28 @@ with st.form("search_form"):
         )
             
     with col2:
-        min_age = st.text_input(
-            "Minimum Age in Weeks",
-            placeholder = "Example: 8",
+        parental_cross = st.selectbox(
+            "Parental Cross",
+            options = parental_cross_choices,
+            index = None,
         )
-        
-        max_age = st.text_input(
-            "Maximum Age in Weeks",
-            placeholder = "Example: 16",
-        )
-
-    with col3:
         requestor_label = st.text_input(
             "Requestor",
+            placeholder = "Name",
         )
-        requestor = requestor_label.lower()
+        requestor = requestor_label.lower()   
 
-        flag_choices = redcap_utils.get_field_choices("flag")
-        flag_labels = [choice["label"] for choice in flag_choices]
-            
-        flag_label = st.selectbox(
-            "Flag",
-            options = flag_labels,
-            index = None
+    with col3:
+        min_age = st.text_input(
+            "Minimum Age in Days",
+            placeholder = "Example: 30",
+        )
+                
+        max_age = st.text_input(
+            "Maximum Age in Days",
+            placeholder = "Example: 90",
         )
 
-        if flag_label != None:
-            flag = next(
-                choice["value"]
-                for choice in flag_choices
-                if choice["label"] == flag_label
-            )
     st.markdown("")
     st.form_submit_button("Update Search Parameters",type="primary")
 
@@ -166,20 +177,23 @@ with st.form("search_form"):
 if selected_genotype_variables:
     df = df[df["mouse_genotype"].isin(selected_genotype_variables)]
 
+if parental_cross:
+    df = df[df["mouse_parental_cross"] == parental_cross]
+
 if sex:
     df = df[df["mouse_sex"] == "male"] if sex == "Male" else df[df["mouse_sex"] == "female"]
 
 if min_age:
-    df = df[df["age_weeks"] > float(min_age)]
+    df = df[df["age_days"] > float(min_age)]
 
 if max_age:
-    df = df[df["age_weeks"] < float(max_age)]
+    df = df[df["age_days"] < float(max_age)]
 
 if requestor:
-    df = df[df["requestor"] == requestor]
+    df = df[df["request_person"].str.lower() == requestor]
 
 if flag:
-    df = df[df["flag"] == flag]
+    df = df[df["request_flag"] == flag]
 
 display_df = df[columns_select]
 display_df = display_df.rename(columns=column_rename_map)
@@ -292,7 +306,7 @@ if view:
         st.session_state["view_type"] = "view"
         st.switch_page("pages/mouse_visualization.py")
 
-if view:
+if edit:
     if selected_mouse_ids == []:
         with status_container:
             st.error("Error: No mice selected for editing")

@@ -212,7 +212,7 @@ def resolve_sex_specific_genotype(genotype_result, mouse_id):
 def get_parental_cross(mouse_id):
 
     mouse_df = st.session_state["redcap_df"].copy()
-    mouse_df = mouse_df[mouse_df["redcap_repeat_instrument"] == ""]
+    mouse_df = mouse_df[(mouse_df["redcap_repeat_instrument"].astype(str).str.strip() == "")]
 
     offspring = mouse_df[mouse_df["mouse_id"] == mouse_id]
     parental_cage = offspring.iloc[0]["mouse_parental_cage"]
@@ -344,9 +344,8 @@ def get_columns():
             {"name": "Mouse ID", "id": "mouse_id"},
             {"name": "Protocol Number", "id": "mouse_protocol"},
             {"name": "Ear Identifier Type", "id": "mouse_ear_id_type"},
-            {"name": "Ear Punch Location", "id": "mouse_ear_punch_location"},
+            {"name": "Ear ID Location", "id": "mouse_ear_id_location"},
             {"name": "Ear Identifier", "id": "mouse_ear_id"},
-            {"name": "Ear Tag Location", "id": "mouse_ear_tag_location"},
             {"name": "Sex", "id": "mouse_sex"},
             {"name": "Date of Birth", "id": "mouse_dob"},
             {"name": "Age (Weeks)", "id": "age_weeks"},
@@ -365,8 +364,8 @@ def get_columns():
             {"name": "Mouse Transferred to New Cage", "id": "mouse_transfer"},
             {"name": "Sac Date", "id": "mouse_sac_date"},
             {"name": "Mouse Notes", "id": "mouse_notes"},
-            {"name": "Flag", "id": "flag"},
-            {"name": "Requestor", "id": "requestor"},
+            {"name": "Flag", "id": "request_flag"},
+            {"name": "Requestor", "id": "request_person"},
             {"name": "Request Date", "id": "request_date"}
         ]
     )
@@ -639,7 +638,7 @@ def get_possible_genotypes(parental_cross, pup_sex):
 
 def build_breeding_dashboard_table(df):
 
-    litter_df = df[df["redcap_repeat_instrument"] != ""]
+    litter_df = df[df["redcap_repeat_instrument"] == "litter_information"]
     breeding_df = df[df["breeding_cage"] != ""]
 
     current_breeding_df = breeding_df

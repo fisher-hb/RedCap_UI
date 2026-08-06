@@ -93,10 +93,22 @@ with col1:
     
     st.subheader("Male Pups")
 
-    number_of_males = st.number_input(
-        "Number of Male Mice",
-        value=0,
-    )
+    cola, colb = st.columns(2)
+    with cola:
+        number_of_males = st.number_input(
+            "Weaned Pups",
+            key = "weaned_males",
+            value=0,
+            min_value=0,
+        )
+    with colb:
+        number_of_sacced_males = st.number_input(
+            "Sacced Pups",
+            key = "sacced_males",
+            value=0,
+            min_value=0,
+        )
+    number_of_sacced_males = int(number_of_sacced_males)
     number_of_males = int(number_of_males)
     
     if number_of_males > 0:
@@ -233,12 +245,24 @@ with col2:
     
     st.subheader("Female Pups")
 
-    number_of_females = st.number_input(
-        "Number of Female Mice",
-        value=0,
-    )
+    cola, colb = st.columns(2)
+    with cola:
+        number_of_females = st.number_input(
+            "Weaned Pups",
+            key = "weaned_females",
+            value=0,
+            min_value=0,
+        )
+    with colb:
+        number_of_sacced_females = st.number_input(
+            "Sacced Pups",
+            key = "sacced_females",
+            value=0,
+            min_value=0,
+        )
+    number_of_sacced_females = int(number_of_sacced_females)
     number_of_females = int(number_of_females)
-    
+
     if number_of_females > 0:
         female_cage_num = st.text_input(
             "Female Cage Number",
@@ -393,6 +417,8 @@ if submission_button:
                 "litter_wean_date": arrival_date.strftime("%Y-%m-%d"),
                 "litter_wean_num_m": str(number_of_males),
                 "litter_wean_num_f": str(number_of_females),
+                "litter_sac_num_m": str(number_of_sacced_males),
+                "litter_sac_num_f": str(number_of_sacced_females),
                 "litter_notes_wean": weaning_notes if weaning_notes else "",
                 "litter_information_complete": "2",
                 }
@@ -404,7 +430,7 @@ if submission_button:
                 fields = {
                     "mouse_ear_id_type": "tag" if tag_tail == 0 or tag_tail == 1 else "none",
                     "mouse_ear_id": male_id_nums[i] if tag_tail == 0 or tag_tail == 1 else "",
-                    "mouse_ear_tag_location": str(male_id_locs[i]).lower() if tag_tail == 0 or tag_tail == 1 else "",
+                    "mouse_ear_id_location": str(male_id_locs[i]).lower() if tag_tail == 0 or tag_tail == 1 else "",
                     "mouse_protocol": "2024",
                     "mouse_sex": "male",
                     "mouse_cage_number": male_cages[i],
@@ -427,7 +453,7 @@ if submission_button:
                 fields = {
                     "mouse_ear_id_type": "tag" if tag_tail == 0 or tag_tail == 1 else "none",
                     "mouse_ear_id": female_id_nums[i] if tag_tail == 0 or tag_tail == 1 else "",
-                    "mouse_ear_tag_location": str(female_id_locs[i]).lower() if tag_tail == 0 or tag_tail == 1 else "",
+                    "mouse_ear_id_location": str(female_id_locs[i]).lower() if tag_tail == 0 or tag_tail == 1 else "",
                     "mouse_protocol": "2024",
                     "mouse_sex": "female",
                     "mouse_cage_number": female_cages[i],

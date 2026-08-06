@@ -15,9 +15,11 @@ mouse_ids = st.session_state["mice_request"].copy()
 df = st.session_state["redcap_df"].copy()
 number_of_mice = len(mouse_ids)
 
+print(number_of_mice)
+
 display_columns = [
     "mouse_id", "mouse_sex", "mouse_age_weeks", "mouse_genotype", "mouse_cage_number",
-    "mouse_ear_tag_location", "mouse_dob", "mouse_age_days", "mouse_age_months",
+    "mouse_ear_id_location", "mouse_dob", "mouse_age_days", "mouse_age_months",
     "mouse_parental_cage", "mouse_litter_id", "mouse_arrival_date", 
     "mouse_genotyping_date", "mouse_wellplate_number", "mouse_notes",
 ]
@@ -112,13 +114,13 @@ if request_submit:
             for i in range(number_of_mice):
                 fields = {
                     "flag": "reserved",
-                    "requestor": requestor,
+                    "request_person": requestor,
                     "request_date": request_date.strftime("%Y-%m-%d"),
                     "request_notes": notes_request,
-                    "experiment": experiment,
-                    "experiment_date": experiment_date.strftime("%Y-%m-%d"),
-                    "experiment_notes": notes_experiment,
-                    "flags_complete": 2
+                    "request_experiment": experiment,
+                    "request_experiment_date": experiment_date.strftime("%Y-%m-%d"),
+                    "request_experiment_notes": notes_experiment,
+                    "request_complete": 2
                     }
                 redcap_utils.create_new_mouse_record(mouse_ids[i], fields)
                 st.success(f"Mouse  {mouse_ids[i]}  requested succesfully")

@@ -313,7 +313,7 @@ if submission_button:
                 fields = {
                     "mouse_ear_id_type": "tag" if auto_generate == "Manually Entered" else "none",
                     "mouse_ear_id": mouse_id_nums[i] if auto_generate == "Manually Entered" else "",
-                    "mouse_ear_tag_location": mouse_id_locs[i] if auto_generate == "Manually Entered" else "",
+                    "mouse_ear_id_location": mouse_id_locs[i].lower() if auto_generate == "Manually Entered" else "",
                     "mouse_protocol": "2024",
                     "mouse_sex": sex,
                     "mouse_cage_number": arrival_cage_number,

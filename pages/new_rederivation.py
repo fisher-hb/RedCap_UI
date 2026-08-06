@@ -364,7 +364,7 @@ if submission_button:
                 fields = {
                     "mouse_ear_id_type": "tag" if genotyped == "yes" else "",
                     "mouse_ear_id": male_id_nums[i] if genotyped == "yes" else "",
-                    "mouse_ear_tag_location": male_id_locs[i],
+                    "mouse_ear_id_location": male_id_locs[i].lower(),
                     "mouse_protocol": "2024",
                     "mouse_sex": "male",
                     "mouse_cage_number": male_cages[i],
@@ -387,7 +387,7 @@ if submission_button:
             fields = {
                 "mouse_ear_id_type": "tag" if genotyped == "yes" else "",
                 "mouse_ear_id": female_id_nums[i] if genotyped == "yes" else "",
-                "mouse_ear_tag_location": female_id_locs[i],
+                "mouse_ear_id_location": female_id_locs[i].lower(),
                 "mouse_protocol": "2024",
                 "mouse_sex": "female",
                 "mouse_cage_number": female_cages[i],

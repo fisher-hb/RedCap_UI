@@ -1,3 +1,4 @@
+from numpy.strings import index
 import streamlit as st
 import pandas as pd
 from datetime import date
@@ -78,15 +79,24 @@ for i in range(len(mouse_names)):
         else:
             ear_id = 2
 
-        # Flag
-        if mouse_df["flag"].iloc[0]=="available":
+        # Request Flag
+        if mouse_df["request_flag"].iloc[0]=="available":
             mouse_flag = 0
-        elif mouse_df["flag"].iloc[0]=="breeding":
+        elif mouse_df["request_flag"].iloc[0]=="breeding":
             mouse_flag = 1
-        elif mouse_df["flag"].iloc[0]=="reserved":
+        elif mouse_df["request_flag"].iloc[0]=="reserved":
             mouse_flag = 2
         else:
             mouse_flag = None
+
+        # Ear ID Location
+        location_to_id = ({
+            "r"  :  0,  "l"  :  1,  "b"  :  2, 
+            "fr" :  3,  "fl" :  4,  "frt":  5,  "fn" :  6,
+            "fry":  7,  "fly":  8,  "fny":  9,  "fd" : 10, 
+            "mn" : 11,  "mr" : 12,  "ml" : 13,  "mrt": 14,  "md" : 15
+        })
+        id_location_index = location_to_id.get(mouse_df["mouse_ear_id_location"].iloc[0])
 
         # Genotype Label
         genotype_label = redcap_utils.genotype_variable_to_label(mouse_df["mouse_genotype"].iloc[0])
@@ -146,22 +156,23 @@ for i in range(len(mouse_names)):
                             "Tag Number",
                             key = f"mouse_tag_number{i}",
                             disabled = disable,
+                            value = str(((mouse_df["mouse_id"].iloc[0]).split(":"))[1])
                         )
                     if mouse_ear_id == "Ear Punch":
-                            mouse_punch_location = st.radio(
-                                "Punch Location",
-                                key = f"mouse_punch_location{i}",
-                                options = ["Left","Right","Both"],
-                                horizontal = True,
-                                disabled = disable,
-                            )
+                        mouse_id_location = st.selectbox(
+                            "ID Location",
+                            key = f"mouse_id_location{i}",
+                            options = ["R","L","B","FR","FL","FRT","FN","FRY","FLY","FNY","FD","MN","MR","ML","MRT","MD","MLT"],
+                            index = id_location_index,
+                            disabled = disable,
+                        )
                 with colc:
                     if mouse_ear_id == "Ear Tag": 
-                        mouse_tag_location = st.radio(
-                            "Tag Location",
-                            key = f"mouse_tag_location{i}",
-                            options = ["Left","Right"],
-                            horizontal = True,
+                        mouse_id_location = st.selectbox(
+                            "ID Location",
+                            key = f"mouse_id_location{i}",
+                            options = ["R","L"],
+                            index = id_location_index,
                             disabled = disable,
                         )
 
@@ -271,7 +282,7 @@ for i in range(len(mouse_names)):
                     mouse_genotyping_performed = st.radio(
                         "Genotyping Performed?",
                         key = f"mouse_genotyping{i}",
-                        options = ["Yes","No"],  
+                        options = ["No","Yes"],  
                         horizontal = True,
                         disabled = disable,
                         index = int(mouse_df["mouse_genotyping"].iloc[0])
