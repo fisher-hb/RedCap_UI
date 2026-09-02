@@ -155,7 +155,7 @@ def column_id_to_name(id):
     )
     return get_name.get(id)
 
-def find_id_from_sample(sample_name):
+def find_id_from_sample(sample_name, return_all = False):
     sample_name = str(sample_name).strip()
 
     mouse_df = st.session_state["redcap_df"].copy()
@@ -187,8 +187,12 @@ def find_id_from_sample(sample_name):
         "date_prefix_num",
         ascending=False
     )
-
-    return matches.iloc[0]["mouse_id"]
+    if return_all:
+        matches = matches[matches["redcap_repeat_instrument"]==""]
+        matches = matches["mouse_id"]
+        return matches
+    else:
+        return matches.iloc[0]["mouse_id"]
 
 def resolve_sex_specific_genotype(genotype_result, mouse_id):
 
@@ -298,6 +302,50 @@ def count_breeding(cross):
     else:
         return counts_df.iloc[0]["breeding_cage_count"]
 
+def get_mouse_info_df():
+    mouse_info = pd.DataFrame(columns=[
+        "mouse_protocol",
+        "mouse_ear_id_type",
+        "mouse_ear_id",
+        "mouse_ear_id_location",
+        "mouse_sex",
+        "mouse_dob",
+        "mouse_genotype",
+        "mouse_cage_number",
+        "mouse_source",
+        "mouse_parental_cage",
+        "mouse_parental_cross",
+        "mouse_litter_id",
+        "mouse_arrival_date",
+        "mouse_genotyping",
+        "mouse_genotyping_date",
+        "mouse_wellplate_number",
+        "mouse_transfer",
+        "mouse_sac_date",
+        "mouse_notes",
+        "mouse_genotype_notes",
+        "mouse_transfer_notes",
+        "mouse_sac_notes",
+        "mouse_info_complete",
+        "breeding_cage",
+        "breeding_partner",
+        "breeding_date_created",
+        "breeding_separated_date",
+        "breeding_notes",
+        "breeding_information_complete",
+        "request_flag",
+        "request_person",
+        "request_date",
+        "request_experiment",
+        "request_experiment_date",
+        "request_notes",
+        "request_experiment_notes",
+        "request_complete",
+        "status",
+    ])
+
+    return mouse_info
+    
 # --------------------------------------------------
 # Layout and Design
 # --------------------------------------------------
@@ -343,12 +391,11 @@ def get_columns():
         [
             {"name": "Mouse ID", "id": "mouse_id"},
             {"name": "Protocol Number", "id": "mouse_protocol"},
-            {"name": "Ear Identifier Type", "id": "mouse_ear_id_type"},
+            {"name": "Ear ID Type", "id": "mouse_ear_id_type"},
             {"name": "Ear ID Location", "id": "mouse_ear_id_location"},
-            {"name": "Ear Identifier", "id": "mouse_ear_id"},
+            {"name": "Ear ID Number", "id": "mouse_ear_id"},
             {"name": "Sex", "id": "mouse_sex"},
             {"name": "Date of Birth", "id": "mouse_dob"},
-            {"name": "Age (Weeks)", "id": "age_weeks"},
             {"name": "Age (Days)", "id": "mouse_age_days"},
             {"name": "Age (Weeks)", "id": "mouse_age_weeks"},
             {"name": "Age (Months)", "id": "mouse_age_months"},
@@ -356,6 +403,7 @@ def get_columns():
             {"name": "Cage Number", "id": "mouse_cage_number"},
             {"name": "Mouse Source", "id": "mouse_source"},
             {"name": "Parental Cage", "id": "mouse_parental_cage"},
+            {"name": "Parental Cross", "id": "mouse_parental_cross"},
             {"name": "Litter ID", "id": "mouse_litter_id"},
             {"name": "Wean/Arrival Date", "id": "mouse_arrival_date"},
             {"name": "Genotyping Performed", "id": "mouse_genotyping"},
@@ -364,12 +412,21 @@ def get_columns():
             {"name": "Mouse Transferred to New Cage", "id": "mouse_transfer"},
             {"name": "Sac Date", "id": "mouse_sac_date"},
             {"name": "Mouse Notes", "id": "mouse_notes"},
-            {"name": "Flag", "id": "request_flag"},
+            {"name": "Genotyping Notes", "id": "mouse_genotype_notes"},
+            {"name": "Transfer Notes", "id": "mouse_transfer_notes"},
+            {"name": "Sac Notes", "id": "mouse_sac_notes"},
+            #{"name": "Experiment", "id": "experiment_type"},
+            #{"name": "Experimentor", "id": "experiment_experimentor"},
+            #{"name": "Experiment Date", "id": "experiment_date"},
+            {"name": "Request Flag", "id": "request_flag"},
             {"name": "Requestor", "id": "request_person"},
-            {"name": "Request Date", "id": "request_date"}
+            {"name": "Request Date", "id": "request_date"},
+            {"name": "Requested Experiment", "id": "request_experiment"},
+            {"name": "Requested Experiment Date", "id": "request_experiment_date"},
+            {"name": "Request Notes", "id": "request_notes"},
+            {"name": "Requested Experiment Notes", "id": "request_experiment_notes"},
         ]
     )
-    
     return columns_df
 
 def display_wellplate(selected_well):

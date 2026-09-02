@@ -109,7 +109,7 @@ genotype_groups = {
         "RD10(-/-)",
         "RD10(+/-)",
         "RhoP23H",
-    ],
+    ], 
 }
 
 # --------------------------------------------------
@@ -138,6 +138,6 @@ if breeding_tab.open:
     with breeding_tab:
         breeding.create_breeding(current_breeding)
 
-if mice_tab.open:
+if mice_tab.open: 
     with mice_tab:
         mice.create_mice(genotype_groups,current_experimental)

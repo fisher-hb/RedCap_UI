@@ -215,6 +215,8 @@ def create_cages(genotype_groups, current_experimental):
     with col2:
         st.subheader("Source Distribution")
 
+        current_experimental = current_experimental.drop_duplicates(subset=["mouse_cage_number"], keep="first").copy()
+
         # Change this column name if needed
         source_col = "mouse_source"
 

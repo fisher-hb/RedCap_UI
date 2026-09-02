@@ -1,5 +1,6 @@
 import streamlit as st
 import redcap_utils
+import pandas as pd
 
 if "password" not in st.session_state:
     st.session_state["password"] = ""
@@ -13,6 +14,8 @@ st.title("Vlasits Colony Manager")
 
 if "redcap_df" not in st.session_state:
     st.session_state["redcap_df"] = redcap_utils.load_records()
+if "mouse_info" not in st.session_state:
+    st.session_state["mouse_info"] = pd.DataFrame(columns=st.session_state["redcap_df"].columns.tolist())
 
 # --------------------------------------------------
 # Define Pages
@@ -43,6 +46,7 @@ request_unweaned = st.Page("pages/request_unweaned_litter.py", visibility = "hid
 wean = st.Page("pages/wean_litter.py", visibility = "hidden")
 new_litter = st.Page("pages/new_litter.py", visibility = "hidden")
 visualize = st.Page("pages/mouse_visualization.py", visibility = "hidden")
+experiment = st.Page("pages/perform_experiment.py", visibility = "hidden")
 
 # --------------------------------------------------
 # Create Menu
@@ -50,7 +54,7 @@ visualize = st.Page("pages/mouse_visualization.py", visibility = "hidden")
 
 nav_structure = {
     "": [dashboard, search, request],
-    "Mice": [genotype, sac, visualize],
+    "Mice": [genotype, sac, visualize, experiment],
     "Breeding": [breeding_dashboard,new_breeding_cage,new_litter, breeding_schemes,wean, request_unweaned],
     "Create": [jax, redev],
 }

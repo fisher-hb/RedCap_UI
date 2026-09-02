@@ -15,8 +15,6 @@ mouse_ids = st.session_state["mice_request"].copy()
 df = st.session_state["redcap_df"].copy()
 number_of_mice = len(mouse_ids)
 
-print(number_of_mice)
-
 display_columns = [
     "mouse_id", "mouse_sex", "mouse_age_weeks", "mouse_genotype", "mouse_cage_number",
     "mouse_ear_id_location", "mouse_dob", "mouse_age_days", "mouse_age_months",
@@ -59,10 +57,20 @@ st.download_button(
 # --------------------------------------------------
 
 st.divider()
-st.subheader("Request Information")
 
+col1, col2 = st.columns([2,1])
+with col1:
+    st.subheader("Request Information")
+with col2:
+    request_type = st.radio(
+            "Request Type",
+            options = ["Reserved","Breeding","Plan to Sac"],
+            index = 0,
+            horizontal = True,
+            label_visibility = "collapsed"
+        )
 col1, col2 = st.columns([1,2])
-with col1:  
+with col1:
     requestor = st.text_input(
         "Requestor",
     )
@@ -77,23 +85,49 @@ with col2:
         height = "stretch",
     )
 
-st.divider()
+if request_type == "Reserved":
 
-col1, col2 = st.columns([1,2])
-with col1:  
-    experiment = st.text_input(
-        "Planned Experiment(s)",
-    )
-    experiment_date = st.date_input(
-        "Anticipated Experiment Date",
-        format = "YYYY-MM-DD",
-    )
-with col2:
-    notes_experiment = st.text_area(
-        "Experiment Notes",
-        placeholder = "Optional notes about experiment.",
-        height = "stretch",
-    )
+    st.divider()
+
+    col1, col2 = st.columns([1,2])
+    with col1:  
+        experiment = st.selectbox(
+            "Planned Experiment",
+            options = ["Staining", 
+                "Ephys",
+                "CSPOT",
+                "OMR",
+                "Practice",
+                "ERG",
+                "Calcium Imaging",
+                "Retina Degeneration Evaluation",
+                "Antibody Testing",
+                "Cre Testing",
+                "Other"],
+            index = None,
+        )
+        experiment_date = st.date_input(
+            "Anticipated Experiment Date",
+            format = "YYYY-MM-DD",
+        )
+    with col2:
+        notes_experiment = st.text_area(
+            "Experiment Notes",
+            placeholder = "Optional notes about experiment.",
+            height = "stretch",
+        )
+elif request_type == "Breeding":
+    with col1:
+        experiment_date = st.date_input(
+            "Anticipated Breeding Date",
+            format = "YYYY-MM-DD",
+        )
+else:
+    with col1:
+        experiment_date = st.date_input(
+            "Anticipated Sac Date",
+            format = "YYYY-MM-DD",
+        )
 
 st.divider()
 request_submit = st.button("Submit Request", type="primary")
@@ -112,19 +146,30 @@ if request_submit:
     if not errors:
         with status_container:
             for i in range(number_of_mice):
-                fields = {
-                    "flag": "reserved",
-                    "request_person": requestor,
-                    "request_date": request_date.strftime("%Y-%m-%d"),
-                    "request_notes": notes_request,
-                    "request_experiment": experiment,
-                    "request_experiment_date": experiment_date.strftime("%Y-%m-%d"),
-                    "request_experiment_notes": notes_experiment,
-                    "request_complete": 2
-                    }
+                if request_type == "Reserved":
+                    fields = {
+                        "request_flag": request_type.lower().replace(" ","_"),
+                        "request_person": requestor,
+                        "request_date": request_date.strftime("%Y-%m-%d"),
+                        "request_notes": notes_request,
+                        "request_experiment": experiment,
+                        "request_experiment_date": experiment_date.strftime("%Y-%m-%d"),
+                        "request_experiment_notes": notes_experiment,
+                        "request_complete": 2
+                        }
+                else:
+                    fields = {
+                        "request_flag": request_type.lower().replace(" ","_"),
+                        "request_person": requestor,
+                        "request_date": request_date.strftime("%Y-%m-%d"),
+                        "request_notes": notes_request,
+                        "request_experiment_date": experiment_date.strftime("%Y-%m-%d"),
+                        "request_complete": 2
+                        }
                 redcap_utils.create_new_mouse_record(mouse_ids[i], fields)
                 st.success(f"Mouse  {mouse_ids[i]}  requested succesfully")
             st.info("Returning you to Mouse Search")
             st.divider()
         time.sleep(2)
+        st.session_state["redcap_df"] = redcap_utils.load_records()
         st.switch_page("pages/search_mice.py")

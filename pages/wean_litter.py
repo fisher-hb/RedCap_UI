@@ -200,7 +200,7 @@ with col1:
                     genotype_label = st.selectbox(
                         "Genotype",
                         key = f"genotype male {i}",
-                        options = ["Waiting on Results"] if tag_tail == 0 or tag_tail == 1 else genotype_labels,
+                        options = ["Waiting on Results"] if tag_tail == 0 or tag_tail == 1 else genotype_labels + ["Not Genotyped"],
                         index = 0 if tag_tail == 0 or tag_tail == 1 else None,
                         disabled = True if tag_tail == 0 or tag_tail == 1 else False,
                         label_visibility="collapsed"
@@ -352,7 +352,7 @@ with col2:
                     genotype_label = st.selectbox(
                         "Genotype",
                         key = f"genotype female {i}",
-                        options = ["Waiting on Results"] if tag_tail == 0 or tag_tail == 2 else genotype_labels,
+                        options = ["Waiting on Results"] if tag_tail == 0 or tag_tail == 2 else genotype_labels + ["Not Genotyped"],
                         index = 0 if tag_tail == 0 or tag_tail == 2 else None,
                         disabled = True if tag_tail == 0 or tag_tail == 2 else False,
                         label_visibility="collapsed"
@@ -427,10 +427,14 @@ if submission_button:
             redcap_utils.add_repeating_instance(dame_id,"litter_information",str(litter_index),fields)
 
             for i in range(number_of_males):
+                if str(male_id_locs[i]).lower() == "none":
+                    ear_id_location = ""
+                else:
+                    ear_id_location = str(male_id_locs[i]).lower()
                 fields = {
                     "mouse_ear_id_type": "tag" if tag_tail == 0 or tag_tail == 1 else "none",
                     "mouse_ear_id": male_id_nums[i] if tag_tail == 0 or tag_tail == 1 else "",
-                    "mouse_ear_id_location": str(male_id_locs[i]).lower() if tag_tail == 0 or tag_tail == 1 else "",
+                    "mouse_ear_id_location": ear_id_location if tag_tail == 0 or tag_tail == 1 else "",
                     "mouse_protocol": "2024",
                     "mouse_sex": "male",
                     "mouse_cage_number": male_cages[i],
@@ -439,6 +443,7 @@ if submission_button:
                     "mouse_genotyping_date": genotyped_date.strftime("%Y-%m-%d") if tag_tail == 0 or tag_tail == 1 else "",
                     "mouse_wellplate_number": wellplate if tag_tail == 0 or tag_tail == 1 else "",
                     "mouse_parental_cage": breeding_cage,
+                    "mouse_parental_cross": parental_cross,
                     "mouse_arrival_date": arrival_date.strftime("%Y-%m-%d"),
                     "mouse_litter_id": litter_id,
                     "mouse_dob": dob_input,
@@ -450,18 +455,23 @@ if submission_button:
                 st.success(f"Mouse  {male_ids[i]}  added succesfully")
 
             for i in range(number_of_females):
+                if str(female_id_locs[i]).lower() == "none":
+                    ear_id_location = ""
+                else:
+                    ear_id_location = str(female_id_locs[i]).lower()
                 fields = {
-                    "mouse_ear_id_type": "tag" if tag_tail == 0 or tag_tail == 1 else "none",
-                    "mouse_ear_id": female_id_nums[i] if tag_tail == 0 or tag_tail == 1 else "",
-                    "mouse_ear_id_location": str(female_id_locs[i]).lower() if tag_tail == 0 or tag_tail == 1 else "",
+                    "mouse_ear_id_type": "tag" if tag_tail == 0 or tag_tail == 2 else "none",
+                    "mouse_ear_id": female_id_nums[i] if tag_tail == 0 or tag_tail == 2 else "",
+                    "mouse_ear_id_location": ear_id_location if tag_tail == 0 or tag_tail == 2 else "",
                     "mouse_protocol": "2024",
                     "mouse_sex": "female",
                     "mouse_cage_number": female_cages[i],
                     "mouse_genotype": female_genotypes[i],
-                    "mouse_genotyping": "1" if tag_tail == 0 or tag_tail == 1 else "0",
-                    "mouse_genotyping_date": genotyped_date.strftime("%Y-%m-%d") if tag_tail == 0 or tag_tail == 1 else "",
-                    "mouse_wellplate_number": wellplate if tag_tail == 0 or tag_tail == 1 else "",
+                    "mouse_genotyping": "1" if tag_tail == 0 or tag_tail == 2 else "0",
+                    "mouse_genotyping_date": genotyped_date.strftime("%Y-%m-%d") if tag_tail == 0 or tag_tail == 2 else "",
+                    "mouse_wellplate_number": wellplate if tag_tail == 0 or tag_tail == 2 else "",
                     "mouse_parental_cage": breeding_cage,
+                    "mouse_parental_cross": parental_cross,
                     "mouse_arrival_date": arrival_date.strftime("%Y-%m-%d"),
                     "mouse_litter_id": litter_id,
                     "mouse_dob": dob_input,

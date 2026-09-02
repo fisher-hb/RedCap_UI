@@ -30,66 +30,99 @@ if upload_order:
     genotype_input = order_df.loc[0,"Genotype"]
     strain_input = order_df.loc[0,"Strain"]
     link_input = order_df.loc[0,"Link"]
+    id_input = order_df.loc[0,"Order ID"]
     notes_input = order_df.loc[0,"Notes"]
 
 st.divider()
 
-col1, col2 = st.columns(2)
+col1, col2 = st.columns([1.2,1], gap="medium")
 
 with col1:
 
-    number_of_mice = st.number_input(
-        "Number of Mice",
-        value= num_input if upload_order else 1,
-        disabled = True if upload_order else False
-    )
-    number_of_mice = int(number_of_mice)
-
-    genotype_choices = redcap_utils.get_genotypes()
-    genotype_labels = genotype_choices["label"]
-
-    if upload_order:
-        sex = st.text_input(
-            "Sex of Mice",
-            value = sex_input,
-            disabled = True
+    cola, colb = st.columns([0.6,3],vertical_alignment="center")
+    with cola:
+        st.markdown(f":small[Mice #]")
+        st.markdown("")
+        st.markdown(f":small[Sex of Mice]")
+        st.markdown("")
+        st.markdown(f":small[Genotype]")
+    with colb:
+        number_of_mice = st.number_input(
+            "Number of Mice",
+            value= num_input if upload_order else 1,
+            disabled = True if upload_order else False,
+            label_visibility = "collapsed",
         )
-        genotype_label = st.text_input(
-            "Genotype",
-            value = genotype_input,
-            disabled = True
-        )
-    else:
-        sex = st.selectbox(
-            "Sex of Mice",
-            options=["Male", "Female"],
-            index = None
-        )
-        genotype_label = st.selectbox(
-            "Genotype",
-            options = genotype_labels,
-            index = None
+        number_of_mice = int(number_of_mice)
+
+        genotype_choices = redcap_utils.get_genotypes()
+        genotype_labels = genotype_choices["label"]
+
+        if upload_order:
+            sex = st.text_input(
+                "Sex of Mice",
+                value = sex_input,
+                disabled = True,
+                label_visibility = "collapsed",
+            )
+            genotype_label = st.text_input(
+                "Genotype",
+                value = genotype_input,
+                disabled = True,
+                label_visibility = "collapsed",
+            )
+        else:
+            sex = st.selectbox(
+                "Sex of Mice",
+                options=["Male", "Female"],
+                index = None,
+                label_visibility = "collapsed",
+            )
+            genotype_label = st.selectbox(
+                "Genotype",
+                options = genotype_labels,
+                index = None,
+                label_visibility = "collapsed",
+            )
+
+        genotype = ""
+        if genotype_label != None:
+            genotype = redcap_utils.genotype_label_to_variable(genotype_label)
+
+    cola, colb = st.columns([0.6,3],vertical_alignment="center")
+    with cola:
+        st.markdown(f":small[Strain #]")
+        st.markdown("")
+        st.markdown(f":small[Link]")
+    with colb:
+        strain = st.text_input(
+            "Strain",
+            placeholder = "Example: 000664",
+            value = strain_input if upload_order else "",
+            disabled = True if upload_order else False,
+            label_visibility = "collapsed",
         )
 
-    genotype = ""
-    if genotype_label != None:
-        genotype = redcap_utils.genotype_label_to_variable(genotype_label)
-
-    strain = st.text_input(
-        "Strain #",
-        placeholder = "Example: 000664",
-        value = strain_input if upload_order else "",
-        disabled = True if upload_order else False
-    )
+        link = st.text_input(
+                "Link",
+                placeholder="Example: https://www.jax.org/strain/000664",
+                value = link_input if upload_order else "",
+                disabled = True if upload_order else False,
+                label_visibility = "collapsed",
+            )
 
 with col2:
-
-    link = st.text_input(
-        "Link",
-        placeholder="Example: https://www.jax.org/strain/000664",
-        value = link_input if upload_order else "",
-        disabled = True if upload_order else False
-    )
+    cola, colb = st.columns([0.7,3],vertical_alignment="center")
+    with cola:
+        st.markdown(f":small[Order ID]")
+    with colb:
+        order_id = st.text_input(
+                "Order ID",
+                placeholder="Example: 44484",
+                value = id_input if upload_order else "",
+                disabled = True if upload_order else False,
+                label_visibility = "collapsed",
+            )
 
     order_notes = st.text_area(
         "Order Notes",
@@ -97,6 +130,7 @@ with col2:
         value = notes_input if upload_order else "",
         height = "stretch",
         disabled = True if upload_order else False,
+        label_visibility = "collapsed",
     )
 
     order_download = pd.DataFrame(
@@ -106,6 +140,7 @@ with col2:
              "Genotype": genotype_label, 
              "Strain": strain,
              "Link": link, 
+             "Order ID": order_id,
              "Notes": order_notes},
         ]
     )
@@ -122,7 +157,7 @@ with col2:
         width="stretch"
     )
 
-    full_notes = f"Link: " + link + "\n\nStrain: " + strain + "\n\n" + order_notes
+    full_notes = f"Link: " + link + "\n\nStrain: " + strain + "\n\nOrder ID: " + order_id + "\n\n" + order_notes
 
 # --------------------------------------------------
 # Mouse Information
@@ -240,37 +275,23 @@ st.divider()
 # --------------------------------------------------
 # Prepare Records for Export
 # --------------------------------------------------
+saved_orders_df = pd.read_csv("cage_orders.csv")
+index = len(saved_orders_df)
 
-record_download = pd.DataFrame(
-    [
-        {"Number of Mice": number_of_mice,
-            "Sex of Mice": sex, 
-            "Genotype": genotype_label, 
-            "Strain": strain,
-            "Link": link, 
-            "Order Notes": order_notes,
-            "Date of Arrival": arrival_date,
-            "Litter ID": litter_id,
-            "Date of Birth": dob,
-            "Arrival Cage Number": arrival_cage_number,
-            "Mouse_IDs": mouse_ids
-            },
-    ]
-)
+saved_orders_df.loc[index, "Number of Mice"] = number_of_mice
+saved_orders_df.loc[index, "Sex of Mice"] = sex if sex else ""
+saved_orders_df.loc[index, "Genotype"] = genotype_label
+#saved_orders_df.loc[index, "Strain Number"] = str(strain) if strain else ""
+saved_orders_df.loc[index, "Link"] = link
+saved_orders_df.loc[index, "Order ID"] = order_id
+saved_orders_df.loc[index, "Order Notes"] = order_notes
+saved_orders_df.loc[index, "Arrival Date"] = arrival_date.strftime("%Y-%m-%d")
+# saved_orders_df.loc[index, "Arrival Cage"] = arrival_cage_number
+saved_orders_df.loc[index, "Date of Birth"] = dob.strftime("%Y-%m-%d")
+saved_orders_df.loc[index, "Litter ID"] = litter_id
+saved_orders_df.loc[index, "Mouse IDs"] = ", ".join(mouse_ids)
 
-csv = record_download.to_csv().encode("utf-8")
-today = datetime.now().strftime("%Y%m%d")
-
-col1, col2, col3 = st.columns([1,1,2])
-with col1:
-    st.download_button(
-        label="Download Record",
-        data=csv,
-        file_name=f"Order_Record_{today}.csv",
-        icon=":material/download:",
-        width="stretch")
-with col2:
-    submission_button = st.button("Submit Records to RedCap", type = "primary", width = "stretch")
+submission_button = st.button("Submit Records to RedCap", type = "primary")
 
 # --------------------------------------------------
 # Redcap Submission
@@ -308,6 +329,8 @@ if submission_button:
 
     if not errors:
 
+        saved_orders_df.to_csv("cage_orders.csv", index=False)
+
         with status_container:
             for i in range(number_of_mice):
                 fields = {
@@ -315,7 +338,7 @@ if submission_button:
                     "mouse_ear_id": mouse_id_nums[i] if auto_generate == "Manually Entered" else "",
                     "mouse_ear_id_location": mouse_id_locs[i].lower() if auto_generate == "Manually Entered" else "",
                     "mouse_protocol": "2024",
-                    "mouse_sex": sex,
+                    "mouse_sex": sex.lower(),
                     "mouse_cage_number": arrival_cage_number,
                     "mouse_genotype": genotype,
                     "mouse_arrival_date": arrival_date.strftime("%Y-%m-%d"),

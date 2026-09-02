@@ -259,8 +259,7 @@ if sac_type == "Multiple Cages":
                 else:
                     st.markdown("")
                     st.caption(":green[:material/check_circle:]")
-
-    cage_ids.append(cage_number)
+            cage_ids.append(cage_number)
     sac_df = df[df["mouse_cage_number"].isin(cage_ids)]
     sac_df = sac_df[sac_df["mouse_transfer"] == ""]
     sac_df = sac_df[sac_df["mouse_sac_date"] == ""]

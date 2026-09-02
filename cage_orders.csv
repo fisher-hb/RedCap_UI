@@ -1,0 +1,24 @@
+Number of Mice,Sex of Mice,Genotype,Strain Number,Link, Order ID,Order Notes,Arrival Date,Arrival Cage,Date of Birth,Litter ID
+1,Male,C57BL/6J,000664,https://www.jax.org/strain/000664,41670,,10/15/24,229257,9/10/24,JAX_41670
+2,Female,Fmr1(-/-),003025,https://www.jax.org/strain/003025,41664,,10/15/24,229243,9/10/24,JAX_41664
+2,Male,C57BL/6J,000664,https://www.jax.org/strain/000664,41665,,10/15/24,229246,9/10/24,JAX_41665
+2,Female,C57BL/6J,000664,https://www.jax.org/strain/000664,41665,,10/15/24,229245,9/10/24,JAX_41665
+1,Male,C57BL/6J,000664,https://www.jax.org/strain/000664,41670,,10/15/24,229258,9/10/24,JAX_41670
+2,Male,Pvalb-cre (+/+),017320,https://www.jax.org/strain/017320,41905,Breeding with C57BL/6J,12/2/24,236643,10/22/24,JAX_41905
+1,Male,Gad2-cre (+/+),010802,https://www.jax.org/strain/010802,41904,Breeding with Ai 148,12/9/24,237108,10/15/24,JAX_41904
+1,Male,Gad2-cre (+/+),010802,https://www.jax.org/strain/010802,41904,Breeding with Ai 148,12/9/24,230823,10/15/24,JAX_41904
+2,Male,Fmr1(-/y),003025,https://www.jax.org/strain/003025,41931,Breeding with Pvalb tdTomato,12/9/24,237183,10/29/24,JAX_41931
+1,Female,C57BL/6J,000664,https://www.jax.org/strain/000664,41932,Breeding with Pvalb cre,12/9/24,230817,10/29/24,JAX_41932
+1,Female,C57BL/6J,000664,https://www.jax.org/strain/000664,41932,Breeding with Pvalb cre,12/9/24,230818,10/29/24,JAX_41932
+2,Female,Pvalb-tdTomato(+),027395,https://www.jax.org/strain/027395,41907,Breeding with Fmr1(-/y),12/16/24,238129,11/12/24,JAX_41907
+2,Female,Ai148(+/+),030328,https://www.jax.org/strain/030328,41906,Breeding with Gad2 cre,12/16/24,238246,11/5/24,JAX_41906
+2,Female,C57Bl/6J,000664,https://www.jax.org/strain/000664,41670,Breeding with C57BL/6J,4/30/25,257113,3/11/25,JAX_41670
+3,Female,Ai14(+/+),007914,https://www.jax.org/strain/007914,43181,Ordered on 20250926,10/2/25,279422,8/19/25,JAX_43181
+5,Male,OPN1(SW/+),032295,https://www.jax.org/strain/032295,43183,"Ordered on 20250926, estimated DOB",1/5/26,290761,12/2/25,JAX_43183
+5,Male,OPN1(SW/+),032295,https://www.jax.org/strain/032295,43183,"Ordered on 20250926, estimated DOB",1/5/26,290616,12/2/25,JAX_43183
+2,Female,OPN1(SW/+),032295,https://www.jax.org/strain/032295,43183,"Ordered on 20250926, estimated DOB",1/5/26,290615,12/2/25,JAX_43183
+5,Female,OPN1(SW/+),032295,https://www.jax.org/strain/032295,43183,"Ordered on 20250926, estimated DOB",1/5/26,290614,12/2/25,JAX_43183
+5,Male,OPN1(MW/y),008619,https://www.jax.org/strain/008619,43182,"Ordered on 20250926, estimated DOB",1/5/26,290612,12/2/25,JAX_43182
+3,Female,OPN1(LW/MW),008619,https://www.jax.org/strain/008619,43182,"Ordered on 20250926, estimated DOB",1/5/26,290611,12/2/25,JAX_43182
+2,Male,C57BL/6J,000664,https://www.jax.org/strain/000664,44028,Ordered on 20260410,4/20/26,305296,3/10/26,JAX_44028
+2,Female,C57BL/6J,000664,https://www.jax.org/strain/000664,44028,Ordered on 20260410,4/20/26,305297,3/10/26,JAX_44028
