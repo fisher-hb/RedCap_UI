@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import redcap_utils
 import time
+import datetime
 
 st.subheader("Search Mice")
 flag = ""
@@ -24,6 +25,7 @@ with st.sidebar:
             ":primary[:material/experiment: Perform Experiment]",
             ":primary[:material/visibility: View Information]",
             ":primary[:material/edit: Edit Information]",
+            ":primary[:material/favorite: Create Breeding Cage]"
         ],
         width = "stretch",
     )
@@ -88,11 +90,6 @@ with st.sidebar:
 
 df = st.session_state["redcap_df"].copy()
 st.session_state["mice_request"] = []
-
-df["mouse_age_days_numeric"] = pd.to_numeric(
-    df["mouse_age_days"],
-    errors="coerce",
-)
 
 upload_csv = pd.read_csv("genotypes.csv",dtype="str")
 genotype_df = upload_csv
@@ -250,7 +247,8 @@ if performed_experiment:
 if flag:
     df = df[df["request_flag"] == flag]
 
-df = df[df["redcap_repeat_instrument"]==""]
+df = df[df["redcap_repeat_instrument"]==""].reset_index(drop=True)
+
 display_df = df[columns_select]
 display_df = display_df.rename(columns=column_rename_map)
 
@@ -260,6 +258,7 @@ if group_view:
     grouped = redcap_utils.group_records(df,group_view)
 
 selected_mouse_ids = []
+selected_mouse_sexes = []
 
 if grouped:
     for group_value, group_df in grouped:
@@ -296,6 +295,7 @@ if grouped:
             i = 0
             while i < len(event.selection.rows):
                 selected_row_index = event.selection.rows[i]
+                selected_mouse_sexes.append(display_df.iloc[selected_row_index]["Sex"])
                 selected_mouse_ids.append(display_df.iloc[selected_row_index]["Mouse ID"])
                 i = i+1
 
@@ -320,17 +320,32 @@ else:
         i = 0
         while i < len(event.selection.rows):
             selected_row_index = event.selection.rows[i]
+            selected_mouse_sexes.append(display_df.iloc[selected_row_index]["Sex"])
             selected_mouse_ids.append(display_df.iloc[selected_row_index]["Mouse ID"])
             i = i+1
 
 if mouse_actions == ":primary[:material/label: Request]":
+    mouse_info = df[df["mouse_id"].isin(selected_mouse_ids)]
+    reservation = mouse_info["request_flag"].tolist()
     if selected_mouse_ids == []:
         with status_container:
             st.error("Error: No mice selected for request")
             time.sleep(2)
             st.rerun()
+    #elif any(flag == "reserved" for flag in reservation):
+    #    with status_container:
+    #        st.error("Error: One or more selected mice are reserved and cannot be requested.")
+    #        time.sleep(2)
+    #        st.rerun()
     else:
         st.session_state["mice_request"] = selected_mouse_ids
+        for i in range(len(selected_mouse_ids)):
+            st.session_state[f"requestor{i}"] = ""
+            st.session_state[f"request_date{i}"] = datetime.date.today()
+            st.session_state[f"request_notes{i}"] = ""
+            st.session_state[f"request_experiment_date{i}"] = datetime.date.today()
+            st.session_state[f"request_experiment{i}"] = None
+            st.session_state[f"request_experiment_notes{i}"] = ""
         st.switch_page("pages/request_mice.py")
 
 sac_info = []
@@ -409,7 +424,36 @@ if mouse_actions == ":primary[:material/check_circle: Mark Available]":
         st.session_state["redcap_df"] = redcap_utils.load_records()
         st.rerun()
 
+if mouse_actions == ":primary[:material/favorite: Create Breeding Cage]":
+    with status_container:
+        errors = []
+        if selected_mouse_ids == []:
+            errors.append("No mice selected for breeding.")
+        if not "female" in selected_mouse_sexes:
+            errors.append("Please select at least one dame.")
+        if not "male" in selected_mouse_sexes:
+            errors.append("Please select one sire.")
+        options = [
+            ['male','female'],
+            ['female','male'],
+            ['male','female','female'],
+            ['female','male','female'],
+            ['female','female','male']
+        ]
+        if not selected_mouse_sexes in options:
+            errors.append("Please make sure to select one of the approved breeding schemes (1M x 1F or 1M x 2F)")
+        if errors:
+            st.write("Please fix the following issues:")
+            for error in errors:
+                st.error(f"{error}")
+                time.sleep(3)
+                st.rerun()
+        if not errors:
+            st.session_state["mice_request"] = selected_mouse_ids
+            st.switch_page("pages/new_breeding_cage.py")
+
 with st.sidebar:
     st.divider()
 
 st.session_state["mouse_info"] = pd.DataFrame(columns=df.columns.tolist())
+st.session_state["mouse_editor_initialized"] = False

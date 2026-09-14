@@ -31,7 +31,6 @@ separate = st.Page("pages/separate_cage.py", title="Separate Mice", icon=":mater
 
 # Breeding
 breeding_dashboard = st.Page("pages/breeding_cages.py", title="Breeding Cages", icon=":material/widget_small:")
-new_breeding_cage = st.Page("pages/new_breeding_cage.py", title="Create Breeding Cage", icon=":material/add_box:")
 breeding_schemes = st.Page("pages/breeding_schemes.py", title="Breeding Schemes", icon=":material/genetics:")
 
 # Ordering
@@ -47,6 +46,7 @@ wean = st.Page("pages/wean_litter.py", visibility = "hidden")
 new_litter = st.Page("pages/new_litter.py", visibility = "hidden")
 visualize = st.Page("pages/mouse_visualization.py", visibility = "hidden")
 experiment = st.Page("pages/perform_experiment.py", visibility = "hidden")
+new_breeding_cage = st.Page("pages/new_breeding_cage.py", visibility = "hidden")
 
 # --------------------------------------------------
 # Create Menu

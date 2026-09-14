@@ -99,8 +99,9 @@ def load_records():
         format_type="json",
         export_data_access_groups=False,
         export_survey_fields=False)
+
+    df = recalculate_dates(pd.DataFrame(records))
     
-    df = pd.DataFrame(records)
     return df
 
 # --------------------------------------------------
@@ -345,7 +346,187 @@ def get_mouse_info_df():
     ])
 
     return mouse_info
-    
+
+def assign_session_data(mouse_id, i):
+    df = st.session_state["redcap_df"].copy()
+    mouse_df = df[df["mouse_id"] == mouse_id]
+    info_df = mouse_df[mouse_df["redcap_repeat_instrument"] == ""]
+    litters_df = mouse_df[mouse_df["redcap_repeat_instrument"] == "litter_information"]
+    experiments_df = mouse_df[mouse_df["redcap_repeat_instrument"] == "experiment_information"]
+
+    info = info_df.iloc[0]
+    genotype_label = genotype_variable_to_label(info["mouse_genotype"]) if info["mouse_genotype"] else ""
+
+    st.session_state[f"mouse_sex{i}"] = info["mouse_sex"].title()
+    st.session_state[f"mouse_cage_number{i}"] = info["mouse_cage_number"]
+    st.session_state[f"mouse_protocol{i}"] = info["mouse_protocol"]
+    st.session_state[f"mouse_ear_id{i}"] = info["mouse_ear_id"]
+    st.session_state[f"mouse_ear_id_type{i}"] = info["mouse_ear_id_type"].title()
+    st.session_state[f"mouse_ear_id_location{i}"] = info["mouse_ear_id_location"]
+    st.session_state[f"mouse_dob{i}"] = datetime.strptime(info["mouse_dob"], "%Y-%m-%d").date()
+    st.session_state[f"mouse_notes{i}"] = info["mouse_notes"]
+    st.session_state[f"mouse_genotype{i}"] = genotype_label
+    st.session_state[f"mouse_source{i}"] = info["mouse_source"].title()
+    st.session_state[f"mouse_arrival_date{i}"] = datetime.strptime(info["mouse_arrival_date"], "%Y-%m-%d").date()
+    st.session_state[f"mouse_parental_cage{i}"] = info["mouse_parental_cage"]
+    st.session_state[f"mouse_parental_cross{i}"] = info["mouse_parental_cross"]
+    st.session_state[f"mouse_litter_id{i}"] = info["mouse_litter_id"]
+    st.session_state[f"mouse_genotyping{i}"] = "No" if info["mouse_genotyping"] == "0" else "Yes"
+    st.session_state[f"mouse_genotyping_date{i}"] = datetime.strptime(info["mouse_genotyping_date"], "%Y-%m-%d").date() if info["mouse_genotyping"] == "1" else None
+    st.session_state[f"mouse_wellplate_number{i}"] = info["mouse_wellplate_number"]
+    st.session_state[f"mouse_genotype_notes{i}"] = info["mouse_genotype_notes"]
+    st.session_state[f"mouse_transfer{i}"] = info["mouse_transfer"] if info["mouse_sac_date"] != "" else "No"
+    st.session_state[f"mouse_transfer_notes{i}"] = info["mouse_transfer_notes"]
+    st.session_state[f"mouse_sacced{i}"] = "Yes" if info["mouse_sac_date"] != "" else "No"
+    st.session_state[f"mouse_sac_date{i}"] = datetime.strptime(info["mouse_sac_date"], "%Y-%m-%d").date() if info["mouse_sac_date"] != "" else None
+    st.session_state[f"mouse_sac_notes{i}"] = info["mouse_sac_notes"]
+
+    if info["breeding_cage"] != "":
+        st.session_state[f"breeding_cage{i}"] = info["breeding_cage"]
+        st.session_state[f"breeding_partner{i}"] = info["breeding_partner"]
+        st.session_state[f"breeding_date_created{i}"] = datetime.strptime(info["breeding_date_created"], "%Y-%m-%d").date() if info["breeding_date_created"] != "" else None
+        st.session_state[f"breeding_separated_date{i}"] = datetime.strptime(info["breeding_separated_date"], "%Y-%m-%d").date() if info["breeding_separated_date"] != "" else None
+        st.session_state[f"breeding_notes{i}"] = info["breeding_notes"]
+
+        for j in range(len(litters_df)):
+            litter = litters_df.iloc[j]
+            st.session_state[f"litter_dob{i}{j}"] = datetime.strptime(litter["litter_dob"], "%Y-%m-%d").date()
+            st.session_state[f"litter_wean_date{i}{j}"] = None if litter["litter_wean_date"] == "" else datetime.strptime(litter["litter_wean_date"], "%Y-%m-%d").date()
+            st.session_state[f"litter_notes_new{i}{j}"] = litter["litter_notes_new"]
+            st.session_state[f"litter_wean_num_m{i}{j}"] = litter["litter_wean_num_m"]
+            st.session_state[f"litter_sac_num_m{i}{j}"] = litter["litter_sac_num_m"]
+            st.session_state[f"litter_wean_num_f{i}{j}"] = litter["litter_wean_num_f"]
+            st.session_state[f"litter_sac_num_f{i}{j}"] = litter["litter_sac_num_f"]
+            st.session_state[f"litter_notes_wean{i}{j}"] = litter["litter_notes_wean"]
+            st.session_state[f"litter_reserver{i}{j}"] = litter["litter_reserver"]
+            st.session_state[f"litter_reservation{i}{j}"] = litter["litter_reservation"]
+            st.session_state[f"litter_notes_reserve{i}{j}"] = litter["litter_notes_reserve"]
+
+    for j in range(len(experiments_df)):
+        experiment = experiments_df.iloc[j]
+        st.session_state[f"experiment_type{i}{j}"] = experiment["experiment_type"].replace("_"," ").title()
+        st.session_state[f"experiment_date{i}{j}"] = datetime.strptime(experiment["experiment_date"], "%Y-%m-%d").date()
+        st.session_state[f"experiment_experimentor{i}{j}"] = experiment["experiment_experimentor"].title()
+        st.session_state[f"experiment_notes{i}{j}"] = experiment["experiment_notes"]
+
+    if info["request_flag"] != "":
+        st.session_state[f"request_flag{i}"] = info["request_flag"].replace("_"," ").title()
+        st.session_state[f"request_person{i}"] = info["request_person"]
+        st.session_state[f"request_date{i}"] = datetime.strptime(info["request_date"], "%Y-%m-%d").date() if info["request_date"] != "" else None
+        st.session_state[f"request_experiment{i}"] = info["request_experiment"].replace("_","").title()
+        st.session_state[f"request_experiment_date{i}"] = datetime.strptime(info["request_experiment_date"], "%Y-%m-%d").date() if info["request_experiment_date"] != "" else None
+        st.session_state[f"request_notes{i}"] = info["request_notes"]
+        st.session_state[f"request_experiment_notes{i}"] = info["request_experiment_notes"]
+
+def submit_session_data(mouse_id, i, breeding, litters, experiments):
+
+    litters = litters.reset_index(drop=True)
+    experiments = experiments.reset_index(drop=True)
+
+    fields = {
+        "mouse_sex": st.session_state[f"mouse_sex{i}"].lower(),
+        "mouse_cage_number": st.session_state[f"mouse_cage_number{i}"],
+        "mouse_protocol": st.session_state[f"mouse_protocol{i}"],
+        "mouse_ear_id": st.session_state[f"mouse_ear_id{i}"],
+        "mouse_ear_id_type": st.session_state[f"mouse_ear_id_type{i}"].lower(),
+        "mouse_ear_id_location": st.session_state[f"mouse_ear_id_location{i}"].lower(),
+        "mouse_dob": st.session_state[f"mouse_dob{i}"].strftime("%Y-%m-%d"),
+        "mouse_notes": st.session_state[f"mouse_notes{i}"],
+        "mouse_genotype": genotype_label_to_variable(st.session_state[f"mouse_genotype{i}"]),
+        "mouse_source": st.session_state[f"mouse_source{i}"].lower(),
+        "mouse_arrival_date": st.session_state[f"mouse_arrival_date{i}"].strftime("%Y-%m-%d"),
+        "mouse_parental_cage": st.session_state[f"mouse_parental_cage{i}"],
+        "mouse_parental_cross": st.session_state[f"mouse_parental_cross{i}"],
+        "mouse_litter_id": st.session_state[f"mouse_litter_id{i}"],
+        "mouse_genotyping": "0" if st.session_state[f"mouse_genotyping{i}"] == "No" else "1",
+        "mouse_genotyping_date": st.session_state[f"mouse_genotyping_date{i}"].strftime("%Y-%m-%d") if st.session_state[f"mouse_genotyping{i}"] == "Yes" else "",
+        "mouse_wellplate_number": st.session_state[f"mouse_wellplate_number{i}"],
+        "mouse_genotype_notes": st.session_state[f"mouse_genotype_notes{i}"],
+        "mouse_transfer": "0" if st.session_state[f"mouse_transfer{i}"] == "No" else "1",
+        "mouse_transfer_notes": st.session_state[f"mouse_transfer_notes{i}"],
+        "mouse_sac_date": "" if st.session_state[f"mouse_sacced{i}"] == "No" else st.session_state[f"mouse_sac_date{i}"].strftime("%Y-%m-%d"),
+        "mouse_sac_notes": st.session_state[f"mouse_sac_notes{i}"],
+        # "mouse_info_complete": "0" if st.session_state[f"mouse_sacced{i}"] == "No" else "2"
+    }
+    create_new_mouse_record(mouse_id, fields)
+
+    if breeding == True:
+        fields = {
+            "breeding_cage": st.session_state[f"breeding_cage{i}"],
+            "breeding_partner": st.session_state[f"breeding_partner{i}"],
+            "breeding_date_created": st.session_state[f"breeding_date_created{i}"].strftime("%Y-%m-%d"),
+            "breeding_date_separated": "" if st.session_state[f"breeding_separated_date{i}"] == None else st.session_state[f"breeding_separated_date{i}"].strftime("%Y-%m-%d"), 
+            "breeding_notes": st.session_state[f"breeding_notes{i}"],
+            "breeding_information_complete": "2"
+        }
+        create_new_mouse_record(mouse_id, fields)
+
+    for j in range(len(litters)):
+        fields = {
+            "redcap_repeat_instrument": "litter_information",
+            "redcap_repeat_instance": str(j+1),
+            "litter_id": litters["litter_id"].iloc[j],
+            "litter_dob": st.session_state[f"litter_dob{i}{j}"].strftime("%Y-%m-%d"),
+            "litter_wean_date": "" if st.session_state[f"litter_wean_date{i}{j}"] == None else st.session_state[f"litter_wean_date{i}{j}"].strftime("%Y-%m-%d"),
+            "litter_notes_new": st.session_state[f"litter_notes_new{i}{j}"],
+            "litter_wean_num_m": st.session_state[f"litter_wean_num_m{i}{j}"],
+            "litter_sac_num_m": st.session_state[f"litter_sac_num_m{i}{j}"],
+            "litter_wean_num_f": st.session_state[f"litter_wean_num_f{i}{j}"],
+            "litter_sac_num_f": st.session_state[f"litter_sac_num_f{i}{j}"],
+            "litter_notes_wean": st.session_state[f"litter_notes_wean{i}{j}"],
+            "litter_reserver": st.session_state[f"litter_reserver{i}{j}"],
+            "litter_reservation": st.session_state[f"litter_reservation{i}{j}"],
+            "litter_notes_reserve": st.session_state[f"litter_notes_reserve{i}{j}"],
+            "litter_information_complete": "0" if st.session_state[f"litter_wean_date{i}{j}"] == None else "2",
+        }
+        create_new_mouse_record(mouse_id, fields)
+
+    for j in range(len(experiments)):
+        fields = {
+            "redcap_repeat_instrument": "experiment_information",
+            "redcap_repeat_instance": str(j+1),
+            "experiment_type": st.session_state[f"experiment_type{i}{j}"].replace(" ","_").lower(),
+            "experiment_date": st.session_state[f"experiment_date{i}{j}"].strftime("%Y-%m-%d"),
+            "experiment_experimentor": st.session_state[f"experiment_experimentor{i}{j}"],
+            "experiment_notes": " " if st.session_state[f"experiment_notes{i}{j}"] == "" else st.session_state[f"experiment_notes{i}{j}"],
+            "experiment_information_complete": "2"
+        }
+        create_new_mouse_record(mouse_id,fields)
+
+    #if st.session_state[f"request_flag{i}"]
+
+    with st.sidebar:
+        st.success(f"Mouse {mouse_id} updated successfully")
+        st.divider()
+
+    """
+        if info["request_flag"] != "":
+            st.session_state[f"request_flag{i}"] = info["request_flag"].replace("_"," ").title()
+            st.session_state[f"request_person{i}"] = info["request_person"]
+            st.session_state[f"request_date{i}"] = datetime.strptime(info["request_date"], "%Y-%m-%d").date() if info["request_date"] != "" else None
+            st.session_state[f"request_experiment{i}"] = info["request_experiment"].replace("_","").title()
+            st.session_state[f"request_experiment_date{i}"] = datetime.strptime(info["request_experiment_date"], "%Y-%m-%d").date() if info["request_experiment_date"] != "" else None
+            st.session_state[f"request_notes{i}"] = info["request_notes"]
+            st.session_state[f"request_experiment_notes{i}"] = info["request_experiment_notes"]
+    """
+
+def recalculate_dates(df):
+    today = date.today()
+    for i in range(len(df)):
+        if df.loc[i,"redcap_repeat_instrument"] == "":
+            dob = datetime.strptime(df["mouse_dob"].iloc[i], "%Y-%m-%d").date()
+            if df.loc[i,"mouse_sac_date"] != "":
+                sac_date = datetime.strptime(df["mouse_sac_date"].iloc[i], "%Y-%m-%d").date()
+                days = days = (sac_date - dob).days
+                df.loc[i,"mouse_age_days"] = f"{days}"
+                df.loc[i,"mouse_age_weeks"] = f"{days/7:.1f}"
+                df.loc[i,"mouse_age_months"] = f"{days/30.4375:.1f}"
+            else:
+                days = (today - dob).days
+                df.loc[i,"mouse_age_days"] = f"{days}"
+                df.loc[i,"mouse_age_weeks"] = f"{days/7:.1f}"
+                df.loc[i,"mouse_age_months"] = f"{days/30.4375:.1f}"
+    return df
 # --------------------------------------------------
 # Layout and Design
 # --------------------------------------------------

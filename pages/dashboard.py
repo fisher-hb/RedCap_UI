@@ -16,7 +16,6 @@ import pages.dashboard_tabs.mice as mice
 # --------------------------------------------------
 
 df = st.session_state["redcap_df"].copy()
-st.session_state["sac"] = pd.DataFrame([])
 
 # --------------------------------------------------
 # Prepare core dataframes
