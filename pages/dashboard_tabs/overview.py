@@ -127,6 +127,9 @@ def create_overview(total_df, current_df, current_experimental, current_breeding
     )
 
     users = list(set(reserved_df["request_person"].tolist()))
+    for i in range(len(users)):
+        users[i] = users[i].replace(" ","").title()
+    users = list(set(users))
 
     cols = [st.columns(1),st.columns(1),st.columns(1)]
     cols[0], cols[1], cols[2] = st.columns(3)
@@ -150,6 +153,7 @@ def create_overview(total_df, current_df, current_experimental, current_breeding
                     with st.container(key=f"colorful_container{i}{j}", height=230):
                         user = users[i+(3*j)]
                         cola, colb = st.columns([1.5,1])
+                        reserved_df['request_person'] = reserved_df['request_person'].str.title().replace(" ","")
                         user_df = reserved_df[reserved_df["request_person"] == user]
                         upcoming_mice = user_df[user_df["request_timing"].isin(["Today", "Upcoming 7 Days"])]
                         overdue_mice = user_df[user_df["request_timing"] == "Overdue"]

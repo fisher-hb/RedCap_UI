@@ -16,7 +16,8 @@ if "redcap_df" not in st.session_state:
     st.session_state["redcap_df"] = redcap_utils.load_records()
 if "mouse_info" not in st.session_state:
     st.session_state["mouse_info"] = pd.DataFrame(columns=st.session_state["redcap_df"].columns.tolist())
-
+if "copy_button" not in st.session_state:
+    st.session_state["copy_button"] = False
 # --------------------------------------------------
 # Define Pages
 # --------------------------------------------------
@@ -27,17 +28,14 @@ search = st.Page("pages/search_mice.py", title="Search Mice", icon=":material/se
 # Mice
 genotype = st.Page("pages/update_genotype.py", title="Genotype", icon=":material/genetics:")
 sac = st.Page("pages/sac.py", title="Sac Mice", icon=":material/deceased:")
-separate = st.Page("pages/separate_cage.py", title="Separate Mice", icon=":material/move_down:")
+# separate = st.Page("pages/separate_cage.py", title="Separate Mice", icon=":material/move_down:")
 
 # Breeding
 breeding_dashboard = st.Page("pages/breeding_cages.py", title="Breeding Cages", icon=":material/widget_small:")
 breeding_schemes = st.Page("pages/breeding_schemes.py", title="Breeding Schemes", icon=":material/genetics:")
 
 # Ordering
-transfer = st.Page("pages/internal_transfer.py", title="New Internal Transfer", icon=":material/move_item:")
-jax = st.Page("pages/new_jax_order.py", title="New Jackson Lab Order", icon=":material/add_box:")
-redev = st.Page("pages/new_rederivation.py", title="New Rederived Cage", icon=":material/add_box:")
-cryo = st.Page("pages/new_cryorecovery.py", title="New Cryorecovered Cage", icon=":material/add_box:")
+create_cage = st.Page("pages/new_cage.py", title="Create New Cage", icon=":material/add_box:")
 
 # Fully Hidden Pages
 request = st.Page("pages/request_mice.py", visibility = "hidden")
@@ -47,6 +45,7 @@ new_litter = st.Page("pages/new_litter.py", visibility = "hidden")
 visualize = st.Page("pages/mouse_visualization.py", visibility = "hidden")
 experiment = st.Page("pages/perform_experiment.py", visibility = "hidden")
 new_breeding_cage = st.Page("pages/new_breeding_cage.py", visibility = "hidden")
+download_records = st.Page("pages/download_records.py", visibility = "hidden")
 
 # --------------------------------------------------
 # Create Menu
@@ -54,9 +53,9 @@ new_breeding_cage = st.Page("pages/new_breeding_cage.py", visibility = "hidden")
 
 nav_structure = {
     "": [dashboard, search, request],
-    "Mice": [genotype, sac, visualize, experiment],
+    "Mice": [genotype, sac, visualize, experiment,download_records],
     "Breeding": [breeding_dashboard,new_breeding_cage,new_litter, breeding_schemes,wean, request_unweaned],
-    "Create": [jax, redev],
+    "Cages": [create_cage],
 }
 
 pg = st.navigation(nav_structure,expanded=2)

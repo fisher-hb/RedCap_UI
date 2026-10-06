@@ -25,7 +25,8 @@ with st.sidebar:
             ":primary[:material/experiment: Perform Experiment]",
             ":primary[:material/visibility: View Information]",
             ":primary[:material/edit: Edit Information]",
-            ":primary[:material/favorite: Create Breeding Cage]"
+            ":primary[:material/favorite: Create Breeding Cage]",
+            ":primary[:material/download: Download Mouse Records]"
         ],
         width = "stretch",
     )
@@ -332,11 +333,14 @@ if mouse_actions == ":primary[:material/label: Request]":
             st.error("Error: No mice selected for request")
             time.sleep(2)
             st.rerun()
+
+    # Add to code if you would like to prevent overwritten Reservations
     #elif any(flag == "reserved" for flag in reservation):
     #    with status_container:
     #        st.error("Error: One or more selected mice are reserved and cannot be requested.")
     #        time.sleep(2)
     #        st.rerun()
+    
     else:
         st.session_state["mice_request"] = selected_mouse_ids
         for i in range(len(selected_mouse_ids)):
@@ -346,6 +350,8 @@ if mouse_actions == ":primary[:material/label: Request]":
             st.session_state[f"request_experiment_date{i}"] = datetime.date.today()
             st.session_state[f"request_experiment{i}"] = None
             st.session_state[f"request_experiment_notes{i}"] = ""
+            st.session_state[f"new_request{i}"] = True
+            st.session_state["copy_button"] == False
         st.switch_page("pages/request_mice.py")
 
 sac_info = []
@@ -406,23 +412,39 @@ if mouse_actions == ":primary[:material/check_circle: Mark Available]":
             time.sleep(2)
             st.rerun()
     else:
-        for i in range(len(selected_mouse_ids)):
-            df = df[df["redcap_repeat_instrument"]==""]
-            mouse = df[df["mouse_id"]==selected_mouse_ids[i]]
-            current_notes = f"{mouse["request_notes"].iloc[0]}\n{mouse["request_experiment_notes"].iloc[0]}"
-            notes = f"Previously reserved by: {mouse["request_person"].iloc[0].title()} for {mouse["request_experiment"].iloc[0].replace("_"," ")}\n {current_notes}"
-            fields = {
-                "request_flag": "available",
-                "request_person": "",
-                "request_date": "",
-                "request_notes": notes,
-                "request_experiment": "",
-                "request_experiment_date": "",
-                "request_experiment_notes": "",
-            }
-            redcap_utils.create_new_mouse_record(selected_mouse_ids[i], fields)
-        st.session_state["redcap_df"] = redcap_utils.load_records()
-        st.rerun()
+        st.session_state["mice_request"] = selected_mouse_ids
+        @st.dialog("Verify Submission")
+        def submit_available():
+            selected_mouse_ids = st.session_state["mice_request"]
+            st.write(f"Please verify that the following mice should be marked as available. :red[Note: This will overwrite any current reservations.]")
+            st.dataframe(selected_mouse_ids,column_config={"value": "Mouse"})
+            if st.button("Verify",type="primary"):
+                st.success("Mice marked as available")
+                df = st.session_state["redcap_df"].reset_index(drop=True)
+                for i in range(len(selected_mouse_ids)):
+                    df = df[df["redcap_repeat_instrument"]==""]
+                    mouse = df[df["mouse_id"]==selected_mouse_ids[i]]
+                    current_notes = f"{mouse["request_notes"].iloc[0]}\n{mouse["request_experiment_notes"].iloc[0]}"
+                    if mouse["request_person"].iloc[0] == "":
+                        notes = current_notes
+                    else:
+                        notes = f"Previously reserved by: {mouse["request_person"].iloc[0].title()} for {mouse["request_experiment"].iloc[0].replace("_"," ")}\n {current_notes}"
+                    fields = {
+                        "request_flag": "available",
+                        "request_person": " ",
+                        "request_date": "",
+                        "request_notes": notes,
+                        "request_experiment": "",
+                        "request_experiment_date": "",
+                        "request_experiment_notes": " ",
+                    }
+                    redcap_utils.create_new_mouse_record(selected_mouse_ids[i], fields)
+                st.info("Reloading Database")
+                st.session_state["redcap_df"] = redcap_utils.load_records()
+                st.rerun()
+
+        submit_available()
+        
 
 if mouse_actions == ":primary[:material/favorite: Create Breeding Cage]":
     with status_container:
@@ -451,6 +473,10 @@ if mouse_actions == ":primary[:material/favorite: Create Breeding Cage]":
         if not errors:
             st.session_state["mice_request"] = selected_mouse_ids
             st.switch_page("pages/new_breeding_cage.py")
+
+if mouse_actions == ":primary[:material/download: Download Mouse Records]":
+    st.session_state["mice_request"] = selected_mouse_ids
+    st.switch_page("pages/download_records.py")
 
 with st.sidebar:
     st.divider()

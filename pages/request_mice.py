@@ -26,11 +26,22 @@ with col2:
         key="request_type",
     )
 
+if st.session_state["copy_button"] == True:
+    for k in range(len(mouse_ids)-1):
+        j = k+1
+        st.session_state[f"requestor{j}"] = st.session_state["requestor0"]
+        st.session_state[f"request_date{j}"] = st.session_state["request_date0"]
+        st.session_state[f"request_notes{j}"] = st.session_state["request_notes0"]
+        st.session_state[f"request_experiment_date{j}"] = st.session_state["request_experiment_date0"]
+        if request_type == "Reserved":
+            st.session_state[f"request_experiment{j}"] = st.session_state["request_experiment0"]
+            st.session_state[f"request_experiment_notes{j}"] = st.session_state["request_experiment_notes0"]
+    st.rerun()
+    # st.session_state["copy_button"] = False
 
 for i, mouse_id in enumerate(mouse_ids):
-
     mouse_df = df[df["redcap_repeat_instrument"] == ""]
-    mouse_df = mouse_df[mouse_df["mouse_id"] == mouse_id]
+    mouse_df = mouse_df[mouse_df["mouse_id"] == mouse_id].reset_index(drop=True)
 
     with st.expander(f"{mouse_id}", expanded=(i == 0)):
         st.markdown("")
@@ -39,30 +50,20 @@ for i, mouse_id in enumerate(mouse_ids):
             st.markdown(f":primary-background[**Mouse ID -- {mouse_id}**]")
         with col2:
             if i == 0 and len(mouse_ids)>1:
-                copy_info = st.button(
+                st.button(
                     ":material/content_copy: Copy Request Info to All Mice",
-                    type="tertiary"
+                    type="tertiary",
+                    key = "copy_button"
                 )
-            else:
-                copy_info = False
 
-        st.session_state[f"requestor{i}"] = mouse_df["request_person"].iloc[0]
-        st.session_state[f"request_date{i}"] = None if mouse_df["request_date"].iloc[0] == "" else datetime.strptime(mouse_df["request_date"].iloc[0], "%Y-%m-%d").date()
-        st.session_state[f"request_notes{i}"] = mouse_df["request_notes"].iloc[0]
-        st.session_state[f"request_experiment_date{i}"] = None if mouse_df["request_experiment_date"].iloc[0] == "" else datetime.strptime(mouse_df["request_experiment_date"].iloc[0], "%Y-%m-%d").date()
-        st.session_state[f"request_experiment{i}"] = mouse_df["request_experiment"].iloc[0].title().replace("_"," ")
-        st.session_state[f"request_experiment_notes{i}"] = mouse_df["request_experiment_notes"].iloc[0]
-
-        if copy_info == True:
-            for j in range(1,len(mouse_ids)):
-                st.session_state[f"requestor{j}"] = st.session_state["requestor0"]
-                st.session_state[f"request_date{j}"] = st.session_state["request_date0"]
-                st.session_state[f"request_notes{j}"] = st.session_state["request_notes0"]
-                st.session_state[f"request_experiment_date{j}"] = st.session_state["request_experiment_date0"]
-                if request_type == "Reserved":
-                    st.session_state[f"request_experiment{j}"] = st.session_state["request_experiment0"]
-                    st.session_state[f"request_experiment_notes{j}"] = st.session_state["request_experiment_notes0"]
-                    st.rerun()
+        if st.session_state[f"new_request{i}"] == True:
+            st.session_state[f"requestor{i}"] = mouse_df["request_person"].iloc[0]
+            st.session_state[f"request_date{i}"] = None if mouse_df["request_date"].iloc[0] == "" else datetime.strptime(mouse_df["request_date"].iloc[0], "%Y-%m-%d").date()
+            st.session_state[f"request_notes{i}"] = mouse_df["request_notes"].iloc[0]
+            st.session_state[f"request_experiment_date{i}"] = None if mouse_df["request_experiment_date"].iloc[0] == "" else datetime.strptime(mouse_df["request_experiment_date"].iloc[0], "%Y-%m-%d").date()
+            st.session_state[f"request_experiment{i}"] = mouse_df["request_experiment"].iloc[0].title().replace("_"," ")
+            st.session_state[f"request_experiment_notes{i}"] = mouse_df["request_experiment_notes"].iloc[0]
+            st.session_state[f"new_request{i}"] = False
 
         col1, col2 = st.columns([1, 2])
         with col1:
@@ -94,10 +95,10 @@ for i, mouse_id in enumerate(mouse_ids):
                     options=[
                         "Staining",
                         "Ephys",
-                        "CSPOT",
-                        "OMR",
+                        "Cspot",
+                        "Omr",
                         "Practice",
-                        "ERG",
+                        "Erg",
                         "Calcium Imaging",
                         "Retina Degeneration Evaluation",
                         "Antibody Testing",
@@ -164,7 +165,7 @@ if request_submit:
 
     else:
         with status_container:
-            for i, mouse_id in enumerate(mouse_ids):
+            for i in range(len(mouse_ids)):
                 fields = {
                     "request_flag": request_type.lower().replace(" ", "_"),
                     "request_person": st.session_state[f"requestor{i}"],
@@ -175,11 +176,11 @@ if request_submit:
                 }
 
                 if request_type == "Reserved":
-                    fields["request_experiment"] = st.session_state[f"request_experiment{i}"]
+                    fields["request_experiment"] = st.session_state[f"request_experiment{i}"].lower().replace(" ", "_")
                     fields["request_experiment_notes"] = st.session_state[f"request_experiment_notes{i}"]
 
-                redcap_utils.create_new_mouse_record(mouse_id, fields)
-                st.success(f"Mouse {mouse_id} requested successfully")
+                redcap_utils.create_new_mouse_record(mouse_ids[i], fields)
+                st.success(f"Mouse {mouse_ids[i]} requested successfully")
 
             st.info("Returning you to Mouse Search")
             st.divider()
