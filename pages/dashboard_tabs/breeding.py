@@ -249,9 +249,10 @@ def create_breeding(current_breeding, all_breeding, genotype_groups):
                     if len(display_sacced)>0:
                         col1, col2, col3, col4 = st.columns(4)
                         col1.metric("Litters", f"{pd.to_numeric(display_sacced["Total Litters"]).mean():.2f}")
-                        col2.metric("Pups per Litter", f"{total_pups/pd.to_numeric(display_sacced["Total Litters"]).sum():.2f}")
-                        col3.metric("Male/Female (%)",f"{pd.to_numeric(display_sacced["Total Male Pups"]).sum()/(0.01*total_pups):.0f}/{pd.to_numeric(display_sacced["Total Female Pups"]).sum()/(0.01*total_pups):.0f}")
-                        col4.metric("Time Breeding (Days)",f"{pd.to_numeric(display_sacced["Breeding Time (Days)"]).mean():.2f}")
+                        if pd.to_numeric(display_sacced["Total Litters"]).mean() != 0:
+                            col2.metric("Pups per Litter", f"{total_pups/pd.to_numeric(display_sacced["Total Litters"]).sum():.2f}")
+                            col3.metric("Male/Female (%)",f"{pd.to_numeric(display_sacced["Total Male Pups"]).sum()/(0.01*total_pups):.0f}/{pd.to_numeric(display_sacced["Total Female Pups"]).sum()/(0.01*total_pups):.0f}")
+                            col4.metric("Time Breeding (Days)",f"{pd.to_numeric(display_sacced["Breeding Time (Days)"]).mean():.2f}")
                     else:
                         st.markdown(f":small[No generalized statistics are available for this cross]")
                     if len(display_current)>0:
