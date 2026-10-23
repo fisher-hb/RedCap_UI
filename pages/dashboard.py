@@ -135,7 +135,7 @@ if cages_tab.open:
 
 if breeding_tab.open:
     with breeding_tab:
-        breeding.create_breeding(current_breeding,all_breeding)
+        breeding.create_breeding(current_breeding,all_breeding,genotype_groups)
 
 if mice_tab.open: 
     with mice_tab:

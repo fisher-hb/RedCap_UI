@@ -8,7 +8,7 @@ from datetime import date, datetime
 # Create Cages Dashboard Tab
 # --------------------------------------------------
 
-def create_breeding(current_breeding, all_breeding):
+def create_breeding(current_breeding, all_breeding, genotype_groups):
 
     st.subheader("Dashboard")
     breeding_summary_df = pd.DataFrame()
@@ -125,19 +125,23 @@ def create_breeding(current_breeding, all_breeding):
     full_df = st.session_state["redcap_df"].copy()
     full_df = full_df[(full_df["redcap_repeat_instrument"])!="experiment_info"]
 
-
+    stats_table = []
+    stats = []
 
     for i in range(len(cross_counts)):
         cross = cross_counts["parental_cross"].iloc[i]
         dames = breeding_records[(breeding_records["parental_cross"]) == cross]
-        stats = []
         for j in range(len(dames)):
             record = full_df[(full_df["mouse_id"]) == dames["dame_id"].iloc[j]]
             litters = len(record)-1
-            start = datetime.strptime(record["breeding_date_created"].iloc[0], "%Y-%m-%d").date() if record["breeding_date_created"].iloc[0] != "" else ""
+            # start = datetime.strptime(record["breeding_date_created"].iloc[0], "%Y-%m-%d").date() if record["breeding_date_created"].iloc[0] != "" else ""
+            start = datetime.strptime(record["mouse_dob"].iloc[0], "%Y-%m-%d").date() if record["mouse_dob"].iloc[0] != "" else ""
             sacced = True if record["mouse_sac_date"].iloc[0] != "" else False
+            cage = record["breeding_cage"].iloc[0] if record["breeding_cage"].iloc[0] != "" else "False"
             males = 0
             females = 0
+
+            end = date.today()
             for k in range(litters):
                 weaned_m = int(record["litter_wean_num_m"].iloc[k+1]) if record["litter_wean_num_m"].iloc[k+1] != "" else 0
                 sacced_m = int(record["litter_sac_num_m"].iloc[k+1]) if record["litter_sac_num_m"].iloc[k+1] != "" else 0
@@ -145,32 +149,116 @@ def create_breeding(current_breeding, all_breeding):
                 sacced_f = int(record["litter_sac_num_f"].iloc[k+1]) if record["litter_sac_num_f"].iloc[k+1] != "" else 0
                 males = males + sacced_m + weaned_m
                 females = females + sacced_f + weaned_f
-                end = datetime.strptime(record["litter_dob"].iloc[k+1], "%Y-%m-%d").date()
+                if sacced:
+                    end = datetime.strptime(record["litter_dob"].iloc[k+1], "%Y-%m-%d").date()
 
-            if start != "" and sacced:
-                time = (end-start).days
-            elif start != "" and not sacced:
-                time = (date.today() - start).days
+            time = (end-start).days
+
+            if sacced:
+                stats.append(
+                    {
+                        "cross": cross,
+                        "Cage Number": cage,
+                        "Total Litters": litters,
+                        "Total Male Pups": males,
+                        "Total Female Pups": females,
+                        "start": start,
+                        "end": end,
+                        "Breeding Time (Days)": time,
+                        "status": "sacced"
+                    }
+                )
             else:
-                time = ""
+                stats.append(
+                    {
+                        "cross": cross,
+                        "Cage Number": cage,
+                        "Total Litters": litters,
+                        "Total Male Pups": males,
+                        "Total Female Pups": females,
+                        "start": start,
+                        "end": end,
+                        "Breeding Time (Days)": time,
+                        "status": "current"
+                    }
+                )
 
-            stats.append(
-                {
-                    "litters": litters,
-                    "males": males,
-                    "females": females,
-                    "time": time,
-                }
-            )
-            
-        st.markdown(cross)
-        cross_statistics = pd.DataFrame(stats)
-        average_litters = pd.to_numeric(cross_statistics["litters"]).mean()
-        average_males = (pd.to_numeric(cross_statistics["males"]).mean())/average_litters if average_litters != 0 else 0
-        average_females = (pd.to_numeric(cross_statistics["females"]).mean())/average_litters if average_litters != 0 else 0
-        average_pups = average_males + average_females
-        average_time = pd.to_numeric(cross_statistics["time"]).mean()
+    genotype_groups = {
+        "Wild Type": [
+            "C57BL/6J x C57BL/6J"
+            ],
+        "Cre Lines": [
+            "Gad2-cre(+/+) x C57BL/6J",
+            "Gad2-cre(+/-) x C57BL/6J",
+            "Pvalb-cre(+/+) x C57BL/6J",
+            "Pvalb-cre(+/-) x C57BL/6J",
+            "Pvalb-cre(+/-) x Pvalb-cre(+/-)",
+            "Six3-cre(+) x C57BL/6J",
+            "Six3-cre(+) x Six3-cre(+)",
+            ],
+        "Fmr1 Core Lines": [
+            "C57BL/6J x Fmr1(+/-)",
+            "C57BL/6J x Fmr1(-/-)",
+            "C57BL/6J x Fmr1(flox/flox)",
+            "Fmr1(flox/y) x Fmr1(flox/flox)",
+            ],
+        "Fmr1 Cre Lines": [
+            "Gad2-cre(+/-) x Fmr1(flox/flox)",
+            "Pvalb-cre(+/-) x Fmr1(flox/flox)",
+            "Six3-cre(+) x Fmr1(flox/flox)",
+            ],
+        "OPN1 Lines": [
+            "OPN1(LW/+) x OPN1(LW/MW)",
+            "OPN1(MW/y) x OPN1(LW/MW)",
+            "OPN1(SW/+) x OPN1(SW/+)",
+            ],
+        "Pvalb-tdTomato Lines": [
+            "C57BL/6J x Fmr1(+/-); Pvalb-tdTomato(+)",
+            "Fmr1(-/y) x Fmr1(+/+); Pvalb-tdTomato(+)",
+            "Fmr1(-/y) x Pvalb-tdTomato(+)",
+            "Fmr1(-/y); Pvalb-tdTomato(+) x C57BL/6J",
+            ],
+        "Ai Reporter Lines": [
+            "C57BL/6J x Ai148(+)",
+            "Gad2-cre(+/+) x Ai148(+)",
+            "Gad2-cre(+/-) x Ai14(+/+)",
+            "Pvalb-cre(+/-) x Ai14(+/+)",
+            "Six3-cre(+) x Ai14(+/+)",
+        ]
+    }
 
-        st.markdown(f"{average_litters:.2f}")
-        st.markdown(f"{average_pups:.2f}")
-        st.markdown(f"{average_time:.0f}")
+    cross_statistics = pd.DataFrame(stats)
+
+    for i, (group_name, group_cross) in enumerate(genotype_groups.items()):
+        group_expander = st.expander(
+            f"**{group_name}**"
+        )
+          
+        with group_expander:
+            for j in range(len(group_cross)):
+
+                display = cross_statistics[(cross_statistics["cross"]) == group_cross[j]]
+                display_sacced = display[(display["status"]) == "sacced"]
+                display_current = display[(display["status"]) == "current"]
+
+                total_pups = pd.to_numeric(display_sacced["Total Male Pups"]).sum() + pd.to_numeric(display_sacced["Total Female Pups"]).sum()
+
+                st.markdown(f"**{group_cross[j]}**")
+                cola, colb, colc = st.columns([0.5,7,3])
+                with colb:
+                    if len(display_sacced)>0:
+                        col1, col2, col3, col4 = st.columns(4)
+                        col1.metric("Litters", f"{pd.to_numeric(display_sacced["Total Litters"]).mean():.2f}")
+                        col2.metric("Pups per Litter", f"{total_pups/pd.to_numeric(display_sacced["Total Litters"]).sum():.2f}")
+                        col3.metric("Male/Female (%)",f"{pd.to_numeric(display_sacced["Total Male Pups"]).sum()/(0.01*total_pups):.0f}/{pd.to_numeric(display_sacced["Total Female Pups"]).sum()/(0.01*total_pups):.0f}")
+                        col4.metric("Time Breeding (Days)",f"{pd.to_numeric(display_sacced["Breeding Time (Days)"]).mean():.2f}")
+                    else:
+                        st.markdown(f":small[No generalized statistics are available for this cross]")
+                    if len(display_current)>0:
+                        with st.expander(f"Current Cages: {len(display_current)}"):
+                            st.dataframe(display_current[["Cage Number","Total Litters","Total Male Pups","Total Female Pups","Breeding Time (Days)"]], hide_index = True)
+                    if len(display_sacced)>0:
+                        with st.expander(f"Former Cages: {len(display_sacced)}"):
+                            st.dataframe(display_sacced[["Cage Number","Total Litters","Total Male Pups","Total Female Pups","Breeding Time (Days)"]], hide_index = True)
+                if j < len(group_cross)-1:
+                    st.divider()
